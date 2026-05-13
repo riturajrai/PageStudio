@@ -306,6 +306,29 @@ Invalid Contentful data never reaches the renderer.
 
 ---
 
+
+Drag & Drop Reordering
+
+Page Studio uses @dnd-kit for drag-and-drop section reordering.
+
+useSortable() makes sections draggable
+DndContext manages drag events
+SortableContext tracks section order
+arrayMove() updates the new order
+Redux instantly updates the live preview
+Drag Flow
+Drag Section
+   ↓
+handleDragEnd()
+   ↓
+arrayMove()
+   ↓
+Redux State Update
+   ↓
+Live Preview Refresh
+Dependency
+npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+
 ## Accessibility (WCAG 2.2 AAA-Oriented)
 
 ### Implemented
