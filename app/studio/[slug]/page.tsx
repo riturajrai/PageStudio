@@ -1,102 +1,217 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { use } from 'react';  // ← ADD THIS
+import { use } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store';
-import { loadDraft, addSection, updateSectionProps } from '@/redux/slices/draftPageSlice';
+import {
+  loadDraft,
+  addSection,
+  updateSectionProps,
+  reorderSections,
+} from '@/redux/slices/draftPageSlice';
 import Renderer from '@/components/Renderer';
 import { Button } from '@/components/ui/button';
 import {
   ArrowLeft, Edit3, Type, Star,
-  ArrowRight, Footprints, Eye, Upload, Check
+  ArrowRight, Footprints, Eye, Upload, Check, GripVertical
 } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-export default function StudioPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);  // ← UNWRAP HERE
+// ── Sortable Section Item ──────────────────────────────────
+function SortableSection({
+  section,
+  index,
+  onEdit,
+}: {
+  section: any;
+  index: number;
+  onEdit: (id: string, type: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : 'auto',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-zinc-800 border border-zinc-700 px-3 py-3 rounded-lg flex items-center gap-2 group"
+    >
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300 touch-none flex-shrink-0"
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="h-4 w-4" />
+      </div>
+
+      {/* Section Info */}
+      <div className="flex-1 min-w-0">
+        <span className="text-xs text-zinc-500">#{index + 1}</span>
+        <p className="capitalize text-sm font-medium truncate">{section.type}</p>
+      </div>
+
+      {/* Edit Button */}
+      <Button
+        size="sm"
+        variant="ghost"
+        className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+        onClick={() => onEdit(section.id, section.type)}
+        aria-label={`Edit ${section.type} section`}
+      >
+        <Edit3 className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+// ── Main Studio Page ───────────────────────────────────────
+export default function StudioPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = use(params);
   const dispatch = useDispatch<AppDispatch>();
   const { sections, title } = useSelector((state: RootState) => state.draftPage);
   const [publishing, setPublishing] = useState(false);
-  const [publishStatus, setPublishStatus] = useState<null | { version: string; changelog: string }>(null);
+  const [publishStatus, setPublishStatus] = useState<null | {
+    version: string;
+    changelog: string;
+  }>(null);
 
+  // ── Load Demo Data ──
   useEffect(() => {
-    dispatch(loadDraft({
-      pageId: '1',
-      slug: slug,          // ← params.slug → slug
-      title: `Studio - ${slug}`,
-      sections: [
-        {
-          id: '1',
-          type: 'hero',
-          props: {
-            heading: "Build beautiful landing pages",
-            subheading: "With Page Studio + Contentful"
-          }
-        },
-        {
-          id: '2',
-          type: 'textSlider',
-          props: {
-            slides: [
-              { heading: "Innovation at its finest", subheading: "Transforming ideas into reality", author: "Rituraj rai" },
-              { heading: "The future is now", subheading: "Join thousands of happy customers", author: "Aarav Patel" }
-            ]
-          }
-        },
-        {
-          id: '3',
-          type: 'testimonial',
-          props: {
-            quote: "This is the best page builder I have used!",
-            author: "Rituraj rai",
-            role: "Product Designer"
-          }
-        },
-        {
-          id: '4',
-          type: 'cta',
-          props: { label: "Get Started Free", url: "#" }
-        },
-        {
-          id: '5',
-          type: 'footer',
-          props: {
-            text: "Made with Page Studio",
-            copyright: "2026 All rights reserved"
-          }
-        },
-      ],
-    }));
-  }, [dispatch, slug]);   // ← params.slug → slug
+    dispatch(
+      loadDraft({
+        pageId: '1',
+        slug,
+        title: `Studio - ${slug}`,
+        sections: [
+          {
+            id: '1',
+            type: 'hero',
+            props: {
+              heading: 'Build beautiful landing pages',
+              subheading: 'With Page Studio + Contentful',
+            },
+          },
+          {
+            id: '2',
+            type: 'textSlider',
+            props: {
+              slides: [
+                {
+                  heading: 'Innovation at its finest',
+                  subheading: 'Transforming ideas into reality',
+                  author: 'Rituraj rai',
+                },
+                {
+                  heading: 'The future is now',
+                  subheading: 'Join thousands of happy customers',
+                  author: 'Aarav Patel',
+                },
+              ],
+            },
+          },
+          {
+            id: '3',
+            type: 'testimonial',
+            props: {
+              quote: 'This is the best page builder I have used!',
+              author: 'Rituraj rai',
+              role: 'Product Designer',
+            },
+          },
+          {
+            id: '4',
+            type: 'cta',
+            props: { label: 'Get Started Free', url: '#' },
+          },
+          {
+            id: '5',
+            type: 'footer',
+            props: {
+              text: 'Made with Page Studio',
+              copyright: '2026 All rights reserved',
+            },
+          },
+        ],
+      })
+    );
+  }, [dispatch, slug]);
 
+  // ── Edit Handler ──
   const handleEdit = (sectionId: string, type: string) => {
     if (type === 'hero') {
-      const heading = prompt("New Heading:", "Updated Heading");
-      if (heading) dispatch(updateSectionProps({ id: sectionId, props: { heading } }));
+      const heading = prompt('New Heading:', 'Updated Heading');
+      if (heading)
+        dispatch(updateSectionProps({ id: sectionId, props: { heading } }));
     } else if (type === 'cta') {
-      const label = prompt("New CTA Label:", "Click Here");
-      if (label) dispatch(updateSectionProps({ id: sectionId, props: { label } }));
+      const label = prompt('New CTA Label:', 'Click Here');
+      if (label)
+        dispatch(updateSectionProps({ id: sectionId, props: { label } }));
     } else if (type === 'testimonial') {
-      const quote = prompt("New Testimonial Quote:", "Amazing experience!");
-      if (quote) dispatch(updateSectionProps({ id: sectionId, props: { quote } }));
+      const quote = prompt('New Testimonial Quote:', 'Amazing experience!');
+      if (quote)
+        dispatch(updateSectionProps({ id: sectionId, props: { quote } }));
     } else if (type === 'footer') {
-      const text = prompt("Footer Text:", "Made with Page Studio");
-      if (text) dispatch(updateSectionProps({ id: sectionId, props: { text } }));
+      const text = prompt('Footer Text:', 'Made with Page Studio');
+      if (text)
+        dispatch(updateSectionProps({ id: sectionId, props: { text } }));
     } else if (type === 'textSlider') {
-      const heading = prompt("New Slide Heading:", "Innovation at its finest");
+      const heading = prompt('New Slide Heading:', 'Innovation at its finest');
       if (heading) {
-        dispatch(updateSectionProps({
-          id: sectionId,
-          props: {
-            slides: [
-              { heading, subheading: "Transforming ideas into reality", author: "Rituraj rai" }
-            ]
-          }
-        }));
+        dispatch(
+          updateSectionProps({
+            id: sectionId,
+            props: {
+              slides: [
+                {
+                  heading,
+                  subheading: 'Transforming ideas into reality',
+                  author: 'Rituraj rai',
+                },
+              ],
+            },
+          })
+        );
       }
     }
   };
 
+  // ── Publish Handler ──
   const handlePublish = async () => {
     setPublishing(true);
     setPublishStatus(null);
@@ -107,12 +222,7 @@ export default function StudioPage({ params }: { params: Promise<{ slug: string 
           'Content-Type': 'application/json',
           'x-user-role': 'publisher',
         },
-        body: JSON.stringify({
-          pageId: '1',
-          slug: slug,       // ← params.slug → slug
-          title,
-          sections,
-        }),
+        body: JSON.stringify({ pageId: '1', slug, title, sections }),
       });
       const data = await res.json();
       if (data.success) {
@@ -130,6 +240,24 @@ export default function StudioPage({ params }: { params: Promise<{ slug: string 
     }
   };
 
+  // ── Drag & Drop Sensors ──
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = sections.findIndex((s) => s.id === active.id);
+    const newIndex = sections.findIndex((s) => s.id === over.id);
+    const reordered = arrayMove([...sections], oldIndex, newIndex);
+    dispatch(reorderSections(reordered));
+  };
+
+  // ── Render ──
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-950 text-white">
 
@@ -138,12 +266,17 @@ export default function StudioPage({ params }: { params: Promise<{ slug: string 
 
         {/* Header */}
         <div className="p-5 border-b border-zinc-800 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => window.history.back()}
+            aria-label="Go back"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <p className="font-semibold text-sm">Page Studio</p>
-            <p className="text-xs text-zinc-500">/{slug}</p>  {/* ← params.slug → slug */}
+            <p className="text-xs text-zinc-500">/{slug}</p>
           </div>
         </div>
 
@@ -153,54 +286,84 @@ export default function StudioPage({ params }: { params: Promise<{ slug: string 
             Add Section
           </h3>
           <div className="grid grid-cols-2 gap-2">
-            <Button onClick={() => dispatch(addSection('hero'))} variant="outline" size="sm" className="justify-start text-xs">
+            <Button
+              onClick={() => dispatch(addSection('hero'))}
+              variant="outline"
+              size="sm"
+              className="justify-start text-xs"
+            >
               <Type className="mr-2 h-3 w-3" /> Hero
             </Button>
-            <Button onClick={() => dispatch(addSection('textSlider'))} variant="outline" size="sm" className="justify-start text-xs">
+            <Button
+              onClick={() => dispatch(addSection('textSlider'))}
+              variant="outline"
+              size="sm"
+              className="justify-start text-xs"
+            >
               <Star className="mr-2 h-3 w-3" /> Slider
             </Button>
-            <Button onClick={() => dispatch(addSection('testimonial'))} variant="outline" size="sm" className="justify-start text-xs">
+            <Button
+              onClick={() => dispatch(addSection('testimonial'))}
+              variant="outline"
+              size="sm"
+              className="justify-start text-xs"
+            >
               <Star className="mr-2 h-3 w-3" /> Testimonial
             </Button>
-            <Button onClick={() => dispatch(addSection('cta'))} variant="outline" size="sm" className="justify-start text-xs">
+            <Button
+              onClick={() => dispatch(addSection('cta'))}
+              variant="outline"
+              size="sm"
+              className="justify-start text-xs"
+            >
               <ArrowRight className="mr-2 h-3 w-3" /> CTA
             </Button>
-            <Button onClick={() => dispatch(addSection('footer'))} variant="outline" size="sm" className="justify-start text-xs col-span-2">
+            <Button
+              onClick={() => dispatch(addSection('footer'))}
+              variant="outline"
+              size="sm"
+              className="justify-start text-xs col-span-2"
+            >
               <Footprints className="mr-2 h-3 w-3" /> Footer
             </Button>
           </div>
         </div>
 
-        {/* Sections List */}
+        {/* Sections List — Drag & Drop */}
         <div className="p-5 flex-1 overflow-auto">
           <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
             Sections ({sections.length})
           </h3>
-          <div className="space-y-2">
-            {sections.map((section, i) => (
-              <div key={section.id} className="bg-zinc-800 border border-zinc-700 px-4 py-3 rounded-lg flex justify-between items-center group">
-                <div>
-                  <span className="text-xs text-zinc-500">#{i + 1}</span>
-                  <p className="capitalize text-sm font-medium">{section.type}</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleEdit(section.id, section.type)}
-                >
-                  <Edit3 className="h-4 w-4" />
-                </Button>
+
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={sections.map((s) => s.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {sections.map((section, i) => (
+                  <SortableSection
+                    key={section.id}
+                    section={section}
+                    index={i}
+                    onEdit={handleEdit}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         </div>
 
         {/* Publish Toast */}
         {publishStatus && (
           <div className="mx-4 mb-2 bg-emerald-900 border border-emerald-600 rounded-lg p-3 text-xs text-emerald-300">
             <div className="flex items-center gap-2 font-semibold mb-1">
-              <Check className="h-4 w-4" /> Published v{publishStatus.version}
+              <Check className="h-4 w-4" />
+              Published v{publishStatus.version}
             </div>
             <p className="text-emerald-400">{publishStatus.changelog}</p>
           </div>
