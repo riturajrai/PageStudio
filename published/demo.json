@@ -1,7 +1,7 @@
 {
-  "version": "1.0.2",
-  "hash": "4d5e6e85aed85a7b218c06f2ebacaea25429277ab5b1640d4d9034f8d92f232a",
-  "publishedAt": "2026-05-13T02:17:26.274Z",
+  "version": "1.0.0",
+  "hash": "1f9b064ba8ac370b32954df0ce64fc55c3cab990205292b9efbed04962d4c724",
+  "publishedAt": "2026-05-13T02:43:58.466Z",
   "slug": "demo",
   "title": "Studio - undefined",
   "sections": [
@@ -9,7 +9,7 @@
       "id": "1",
       "type": "hero",
       "props": {
-        "heading": "Updated Heading   gfngfngnfgfn",
+        "heading": "Updated Headinghgnjmtgyhjytjh",
         "subheading": "With Page Studio + Contentful"
       }
     },
@@ -52,5 +52,5 @@
       }
     }
   ],
-  "changelog": "Updated from v1.0.1 → v1.0.2"
+  "changelog": "Initial release v1.0.0"
 }
