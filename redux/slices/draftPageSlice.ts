@@ -19,11 +19,10 @@ const draftPageSlice = createSlice({
   initialState,
   reducers: {
     loadDraft: (state, action: PayloadAction<PageData>) => {
-      state.pageId = action.payload.pageId;
-      state.slug = action.payload.slug;
-      state.title = action.payload.title || `Studio - ${action.payload.slug}`;
-      state.sections = [...action.payload.sections]; // deep copy
-      state.isDirty = false;
+      return {
+        ...action.payload,
+        isDirty: false,
+      };
     },
 
     addSection: (state, action: PayloadAction<SectionType>) => {
@@ -32,11 +31,15 @@ const draftPageSlice = createSlice({
         type: action.payload,
         props: {},
       });
+
       state.isDirty = true;
     },
 
     removeSection: (state, action: PayloadAction<string>) => {
-      state.sections = state.sections.filter(s => s.id !== action.payload);
+      state.sections = state.sections.filter(
+        section => section.id !== action.payload
+      );
+
       state.isDirty = true;
     },
 
@@ -45,12 +48,25 @@ const draftPageSlice = createSlice({
       state.isDirty = true;
     },
 
-    updateSectionProps: (state, action: PayloadAction<{ id: string; props: Record<string, any> }>) => {
-      const section = state.sections.find(s => s.id === action.payload.id);
+    updateSectionProps: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        props: Record<string, any>;
+      }>
+    ) => {
+      const section = state.sections.find(
+        s => s.id === action.payload.id
+      );
+
       if (section) {
-        section.props = { ...section.props, ...action.payload.props };
-        state.isDirty = true;
+        section.props = {
+          ...section.props,
+          ...action.payload.props,
+        };
       }
+
+      state.isDirty = true;
     },
 
     setPageTitle: (state, action: PayloadAction<string>) => {

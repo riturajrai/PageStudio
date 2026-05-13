@@ -342,7 +342,6 @@ npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
 - `prefers-reduced-motion` respected in TextSlider (autoPlay disabled when reduced motion preferred)
 
 ### Accessibility in TextSliderSection
-
 ```typescript
 // Respects prefers-reduced-motion
 const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

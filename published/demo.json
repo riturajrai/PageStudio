@@ -1,0 +1,56 @@
+{
+  "version": "1.0.2",
+  "hash": "4d5e6e85aed85a7b218c06f2ebacaea25429277ab5b1640d4d9034f8d92f232a",
+  "publishedAt": "2026-05-13T02:17:26.274Z",
+  "slug": "demo",
+  "title": "Studio - undefined",
+  "sections": [
+    {
+      "id": "1",
+      "type": "hero",
+      "props": {
+        "heading": "Updated Heading   gfngfngnfgfn",
+        "subheading": "With Page Studio + Contentful"
+      }
+    },
+    {
+      "id": "2",
+      "type": "textSlider",
+      "props": {
+        "slides": [
+          {
+            "heading": "Innovation at its finest",
+            "subheading": "Transforming ideas into reality",
+            "author": "Rituraj rai"
+          }
+        ]
+      }
+    },
+    {
+      "id": "3",
+      "type": "testimonial",
+      "props": {
+        "quote": "This is the best page builder I have used!",
+        "author": "Rituraj rai",
+        "role": "Product Designer"
+      }
+    },
+    {
+      "id": "4",
+      "type": "cta",
+      "props": {
+        "label": "Get Started Free",
+        "url": "#"
+      }
+    },
+    {
+      "id": "5",
+      "type": "footer",
+      "props": {
+        "text": "Made with Page Studio",
+        "copyright": "2026 All rights reserved"
+      }
+    }
+  ],
+  "changelog": "Updated from v1.0.1 → v1.0.2"
+}
