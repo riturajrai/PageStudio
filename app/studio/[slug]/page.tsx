@@ -38,7 +38,7 @@ export default function StudioPage({ params }: { params: Promise<{ slug: string 
           type: 'textSlider',
           props: {
             slides: [
-              { heading: "Innovation at its finest", subheading: "Transforming ideas into reality", author: "Ritu Sharma" },
+              { heading: "Innovation at its finest", subheading: "Transforming ideas into reality", author: "Rituraj rai" },
               { heading: "The future is now", subheading: "Join thousands of happy customers", author: "Aarav Patel" }
             ]
           }
@@ -48,7 +48,7 @@ export default function StudioPage({ params }: { params: Promise<{ slug: string 
           type: 'testimonial',
           props: {
             quote: "This is the best page builder I have used!",
-            author: "Rituraj Sharma",
+            author: "Rituraj rai",
             role: "Product Designer"
           }
         },
@@ -89,7 +89,7 @@ export default function StudioPage({ params }: { params: Promise<{ slug: string 
           id: sectionId,
           props: {
             slides: [
-              { heading, subheading: "Transforming ideas into reality", author: "Ritu Sharma" }
+              { heading, subheading: "Transforming ideas into reality", author: "Rituraj rai" }
             ]
           }
         }));
