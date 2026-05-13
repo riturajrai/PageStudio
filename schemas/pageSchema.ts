@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const sectionSchema = z.object({
   id: z.string().min(1),
   type: z.enum(['hero', 'cta', 'testimonial', 'featureGrid', 'textSlider', 'footer']),
-  props: z.record(z.any()),
+  props: z.record(z.string(), z.unknown()),
 });
 
 export const pageSchema = z.object({
